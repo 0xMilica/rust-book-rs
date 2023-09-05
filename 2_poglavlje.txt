@@ -1,0 +1,401 @@
+2.PROGRAMIRANJE GUESSING IGRE
+
+SETOVANJE PROJEKTA
+
+cargo new guessing_game
+ cd guessing_game
+
+PROCESUIRANJE IGRE
+
+use std::io;
+fn main() {
+    println!("Guess the number!");
+
+  println!("Please input your guess.");
+
+    let mut guess = String::new();
+
+    io::stdin()
+        .read_line(&mut guess)
+        .expect("Failed to read line");
+
+    println!("You guessed: {guess}");
+}
+
+
+Po defaultu Rust ima set itema definisanih u standardnoj biblioteci koje ubacuje u kod svakog programa, to se zove prelude I možemo naći u dokumentaciji. Ako tip koji nam treba nije u preludu treba explicitno da ga ubacimo u scope programa koristeći use statement. Use::std::io biblioteka pruža niz fitchera, uključujući I onaj koji može da prima inpute od usera.
+
+println!("Guess the number!");   
+ println!("Please input your guess.");
+Println je makro koji printuje string na ekran
+ČUVANJE VREDNOSTI U PROMENLJIVAMA 
+let mut guess = String::new();
+let apples = 5;
+
+Promenljivoj apples dodeljujemo vrednost 5. U Rustu su vrednosti imutabilne po defoltu. To znači da je let mut guess promenljiva mutabilna I njoj dodeljuemo String::new() funkciju  - konstruktor- koji vraća instancu tipa string koji se nalazi u std biblioteci, i on je rastuci UTF-encoded bit texta. Sintaksa :: u preimeru ::new označava da je new funkcija dodele tipa String. Associated funkcija ili funkcija dodele je ona koja se implementira na tip, u ovom slučaju na String. Ova new funkcija stvara novi prazan string. 
+let mut guess = String::new(); ustvari kreira mutabilnu promenljivu koja se vezuje za novu praznu instancu Stringa. 
+
+Receiving User Input
+Za user input koristimo metodu iz std biblioteke:
+
+io::stdin()
+        .read_line(&mut guess)
+Iz io modula pozivamo stdin() funkciju.
+Stdin funkcija vraca instancu std::io::Stdin tip koji handluje input u terminalu.
+Sledeća linija .read_line(&mut guess) poziva metodu read_line koja čita input usera. Funkciji read_line prosledjujemo &mut guess da kazemo kakav string storuje input. Posao read_line funkcije je da apenduje standard user input na string, tako da prosledjujemo taj string kao argument. String argument mora da bude mutabilan kako bi mogli da ga menjamo. & znak znači da se  radi o referenci.
+
+
+HENDLOVANJE POTENCIJALNOG NEUSPEHA	
+
+
+.expect("Failed to read line");
+
+To smo mogli da napišemo I na ovaj način:
+
+io::stdin().read_line(&mut guess).expect("Failed to read line");
+
+Napisati sve to u jednoj liniji je predugačko, tako da je bolje svaku metodu pisati na zasebnoj liniji koja poseduje ou sintaksu .method_name(). Metoda read_line prima string kao argument ali takodje vraća I Result kao vrednost. Result je enumeracija (enum), koji može posedovati različita stanja – variant. Svrha ovog Result-a je da enkodujemo error-handling informaciju.
+Variant’s Result-a su Ok I Err. Ok varianta sugeriše da je operacija uspesna I da je unutar ok-a uspešno generisana vrednost. Err varianta znači da je operacija fejlovala I Err sadrži informaciju kako ili zašto je operacija fejlovala. Vrednosti Result tipa, kao vrednosti bilo kog tipa, imaju vrednosti, definisane nad njima. Instanca Result-a ima expect metodu koju možemo da pozovemo nad njom. Ako je ova instanca Result-a Err vrednost, expect ce krešovati program, I ispisati poruku koju smo prosledili kao argument expectu. Ako read_line metoda vrati Err, to je verovatno rezultat erora koji dolazi od undrlaying operating sistema. Ako je instanca Resulta Ok vrednost, expect će vratiti vrednot koji drži ok I vratiti samo tu vrednot da možemo da je koristimo. U ovom slučaju, to je broj bajtova userovog inputa - usize. Ako ne pozovemo expect, program će se kompajlirati ali cemo dobiti warning:
+
+$ cargo build
+   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)
+warning: unused `Result` that must be used
+  --> src/main.rs:10:5
+   |
+10 |     io::stdin().read_line(&mut guess);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this `Result` may be an `Err` variant, which should be handled
+   = note: `#[warn(unused_must_use)]` on by default
+
+warning: `guessing_game` (bin "guessing_game") generated 1 warning
+    Finished dev [unoptimized + debuginfo] target(s) in 0.59s
+
+Rust nas upozorava da nismo iskoristili vrednost Rusulta i vraćen from read_line funkcije indikujući da nismo hendlovali potencijalni error. Najbolji način je da napišemo error-handling code, ali mi u ovom slučaju želimo samo da krešujemo program. 
+
+
+ŠTAMPANJE VREDNOSTI SA PRINTLN! PLACEHOLDEROM
+
+use std::io;
+
+fn main() {
+    println!("Guess the number!");
+
+    println!("Please input your guess.");
+
+    let mut guess = String::new();
+
+    io::stdin()
+        .read_line(&mut guess)
+        .expect("Failed to read line");
+
+    println!("You guessed: {guess}");
+}
+
+println!("You guessed: {guess}");   Ova linija printa string koji je user uneo u konzolu. Ono što se nalazi izmedju vitičastih zagrada je ustvari placeholder za stvarnu vrednost. Kada printamo rezultat evaluacije nekog izraza, smeštamo prazne vitičaste zagrade u format string, I potom pratimo izraze podeljene zarezima sa vitičastim zagradama koje sadrže placeholder vrednosti, npr:
+let x = 5;
+let y = 10;
+println!("x = {x} and y + 2 = {}", y + 2);
+
+Ovaj kod će isprintitati x = 5 i y + 2 = 12.
+
+
+TESTIRANJE PRVOG DELA
+
+$ cargo run
+   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)
+    Finished dev [unoptimized + debuginfo] target(s) in 6.44s
+     Running `target/debug/guessing_game`
+Guess the number!
+Please input your guess.
+6
+You guessed: 6
+
+Dobijamo input koji smo uneli sa tastature.
+
+GENERISANJE TAJNOG BROJA
+
+Tajni broj treba da bude različit svaki put tako da ćemo korisiti random broj izmedju 1 I 100.Rust još uvek nema randomizer brojeva u std biblioteci, tako da ćemo morati da koristimo neki drugi crate.
+
+KORIŠĆENJE CRATE-A ZA DOBIJANJE VIŠE FUNKCIONALNOSTI
+
+Crate je kolekcija Rust source code fajlova. Projekat koji mi gradimo je binary crate i to znači da je executable. U ovom slučaju ćemo koristi rand crate I to je library crate, namenjen da se izvršava u drugim programima. Pre nego što napišemo program koji koristi rand, moramo da rekonfigurišemo naš Cargo.toml fajl I dodamo rand crate u dependeci sekciju.
+
+[dependencies]
+rand = "0.8.5" 
+
+“0.8.5.” specifajer se odnosi na verziju I naziva se Sematnic versioning (Sem ver). Ovo je skraćeno od ^0.8.5, što znači vece od verzije 0.8.5 ali manje od verzije 0.9.0. Sada kada izbildujemo projekat, Cargo downloaduje naše dependencije:
+
+
+$ cargo build
+    Updating crates.io index
+  Downloaded rand v0.8.5
+  Downloaded libc v0.2.127
+  Downloaded getrandom v0.2.7
+  Downloaded cfg-if v1.0.0
+  Downloaded ppv-lite86 v0.2.16
+  Downloaded rand_chacha v0.3.1
+  Downloaded rand_core v0.6.3
+   Compiling libc v0.2.127
+   Compiling getrandom v0.2.7
+   Compiling cfg-if v1.0.0
+   Compiling ppv-lite86 v0.2.16
+   Compiling rand_core v0.6.3
+   Compiling rand_chacha v0.3.1
+   Compiling rand v0.8.5
+   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)
+    Finished dev [unoptimized + debuginfo] target(s) in 2.53s
+
+Kada uključujemo spoljašnje dependncije, Cargo fetchuje poslednje verzije svih dependencija iz registrija koji su kopije podataka koji se nalaze u Crates.io. Tamo možemo da nadjemo open source projekte koji su nam potrebni za naš projekat. Iako u ovom slučaju nama treba samo rand crate, cargo ce fetchovati I druge dependencije potrebne za rand I potom ih kompajlirati I runuvati program. 
+
+
+OSIGURANJE OD PONOVNIH REBILDOVA SA CARGO.LOCK FAJLOM
+
+Cargo ima mehanizam koji obezbedjuje da rebilduje isti artefakt svaki put kada bildujemo kod. To znači da ukoliko se neki Crate koji koristimo u medjuvremenu promeni, cargo.lock nas osigurava da koristimo verziju Crate-a iz prvog builda, sve dok explicitno ne promenimo verziju tog Crate-a.
+
+
+UPDEJTOVANJE CRATE-A SA NOVOM VERZIJOM
+
+Kada hoćemo da updejtujemo Crate koristimo opciju update koja ce ignorisati lock fajl i updejtovati poslednju verziju Crate-a u Toml fajlu, zatim ce tu novu verziju zapisati Cargo.lock fajlu.
+
+$ cargo update
+    Updating crates.io index
+    Updating rand v0.8.5 -> v0.8.6	
+
+[dependencies]
+rand = "0.9.0"
+
+GENERISANJE RANDOM BROJA
+
+use std::io;
+use rand::Rng;
+
+fn main() {
+    println!("Guess the number!");
+
+    let secret_number = rand::thread_rng().gen_range(1..=100);
+
+    println!("The secret number is: {secret_number}");
+
+    println!("Please input your guess.");
+
+    let mut guess = String::new();
+
+    io::stdin()
+        .read_line(&mut guess)
+        .expect("Failed to read line");
+
+    println!("You guessed: {guess}"); }
+
+Prvo dodajemo liniju use rand::Rng; Rng trait definiše metode koje random number generator implementira, i taj trait moramo da dovedemo u scope našeg koda. Potom dodajemo 2 linije koda:U prvoj pozivamo rand::thread_rng funkciju koja nam daje odredjenu random number generator funkciju koju ćemo da koristimo, jednu koja je lokalna za trenutni thread koji nam obezbedjuje naš OS. Potom pozivamo gen_range metodu na random_number generatoru. Ova metoda je definisana Rng traitom koji je doveden u scope sa use rand::Rng; stejtmentom. Gen_range metoda uzima range expresion kao argument i generiše random broj u rangeu. Vrsta range izraza koji ovde koristimo ima formu start..=end, i inkluzivna je na gornjim i donjim granicama tako da moramo da preciziramo 1.=1000 da bi tražili broj izmedju 1 i 100. Da bismo znali koji Crate ima koje metode i koje nam trebaju možemo da koristimo komandu cargo doc –open, koji će nam bildovati dokumentaciju na osnovu naših dependencija lokalno i otvoriti u browseru. Druga nova linija koju smo uveli printa broj.
+
+$ cargo run
+   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)
+    Finished dev [unoptimized + debuginfo] target(s) in 2.53s
+     Running `target/debug/guessing_game`
+Guess the number!
+The secret number is: 7
+Please input your guess.
+4
+You guessed: 4
+
+$ cargo run
+    Finished dev [unoptimized + debuginfo] target(s) in 0.02s
+     Running `target/debug/guessing_game`
+Guess the number!
+The secret number is: 83
+Please input your guess.
+5
+You guessed: 5
+
+COMPARING THE GUESS TO THE SECRET NUMBER
+Sad kad imamo input od usera i random broj, možemo da ih uporedimo. 
+use rand::Rng;
+use std::cmp::Ordering;
+use std::io;
+
+fn main() {
+    // --snip--
+
+    println!("You guessed: {guess}");
+
+    match guess.cmp(&secret_number) {
+        Ordering::Less => println!("Too small!"),
+        Ordering::Greater => println!("Too big!"),
+        Ordering::Equal => println!("You win!"),
+    }
+}
+
+Prvo uvodimo novi use statement unoseći tip std::cmp::Ordering u scope našeg koda iz std biblioteke. Ordering tip je enum i ima variantse Less. Greater i Equal. To su 3 potencijale varijante poredjenja. Potom dodajemo 5 novih linija koje koriste Ordering type. Cmp metoda poredi 2 vrednosti. Uzima refernece na vrednosti koje želimo da poredimo: ovde konkretno guess i secret_number. Potom vraća variantse Ordering enuma. Koristimo match izraz da dolučimo šta da radimo na osnovu variante koju vraca Ordering iz cmp poziva sa vrednostima guess i secret_number. Match izraz se sastoji od arms-a. Arm se sastoji od paterna sa kojim se metchuje, i koda koji treba da se izvrši ako se vrednost prosledjena matchu poklapa sa paternom arma. Rust uzima vrednost proslednjenu match-u i i prolazi kroz svaki arm patern. Na našem mprimeru match izraz radi na sledeći način: Ako je user ukucao 50 a random generisani broj je 38. Nas kod poredi 50 i 38 a cmp metoda će vratitit Ordering::Greater. Match izraz dobija Ordering::Greater vrednost i počinje da proverava svaki arm patern. Ignoriše paterne sa kojima se ne poklapa. Asocijativni kod sa Ordering::Greate je da printuje Too big. Match izraz se završava posle prvog uspešnog poklapanja.  Veoma je bitno da matchu prosledimo i iste tipove tako da stringove moramo parsovati u intove da bi mogli da ih poredimo.
+
+// --snip--
+
+    let mut guess = String::new();
+
+    io::stdin()
+        .read_line(&mut guess)
+        .expect("Failed to read line");
+
+    let guess: u32 = guess.trim().parse().expect("Please type a number!");
+
+    println!("You guessed: {guess}");
+
+    match guess.cmp(&secret_number) {
+        Ordering::Less => println!("Too small!"),
+        Ordering::Greater => println!("Too big!"),
+        Ordering::Equal => println!("You win!"),
+    }
+
+Dodali smo sledeću liniju u kod:
+
+let guess: u32 = guess.trim().parse().expect("Please type a number!");
+
+Rust nam dozvoljova da shadow-ujemo guess vrednost. Ova pogodnost se često koristi kada hoćemo da konvertujemo jedan tip u drugi. Mi bajndujemo ovu novu vrednost sa izrazom guess.trim().parse().  Guess se u ovom slučaju vezuje za originalnu guess promenljivu koja sadrži input kao string. Trim metoda uklanja white spejsove na početku i na kraju, što je neophodno da bismo mogli da poredimo string sa tipom u32, koji sadrži samo numeričke podatke. User mora da ispostuje read_line funkciju i inputira broj. Kada na primer unese 5 i pritisne enter, guess izgleda ovako: 5\n. \n predstavlja novu liniju.Na windowsu, pritisak entera rezultira sa \r\n. Te dodatke rešava trim metoda i dobijamo samo broj 5. Parse metoda pretvara string u novi tip. Ovde string konvertujemo u broj. Moramo da naznačimo konkretan tip sa let guess: u32. u32 je pogodan tip za male pozitivne brojeve. 
+
+
+DOZVOLJAVANJE VIŠESTRUKIH POGODATAKA SA LOOPINGOM
+
+
+Loop keyword kreieira infinite loop. Dodajemo loop da bi user imao više šansi za pogodak. 
+
+// --snip--
+
+    println!("The secret number is: {secret_number}");
+
+    loop {
+        println!("Please input your guess.");
+
+        // --snip--
+
+        match guess.cmp(&secret_number) {
+            Ordering::Less => println!("Too small!"),
+            Ordering::Greater => println!("Too big!"),
+            Ordering::Equal => println!("You win!"),
+        }
+    }	
+
+Sve od guess input prompta pa nadalje smo prebacili u loop. Ovu petlju možemo prekinuti sa ctr+c ali se ona prekida i kad user unese pogrešan odgovor. 
+
+
+$ cargo run
+   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)
+    Finished dev [unoptimized + debuginfo] target(s) in 1.50s
+     Running `target/debug/guessing_game`
+Guess the number!
+The secret number is: 59
+Please input your guess.
+45
+You guessed: 45
+Too small!
+Please input your guess.
+60
+You guessed: 60
+Too big!
+Please input your guess.
+59
+You guessed: 59
+You win!
+Please input your guess.
+quit
+thread 'main' panicked at 'Please type a number!: ParseIntError { kind: InvalidDigit }', src/main.rs:28:47
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Tajping quit će prekinuti igru kao i pogrešan odgovor.
+
+
+
+QUITTING AFTER A CORRECT GUESS	
+
+     // --snip--
+
+        match guess.cmp(&secret_number) {
+            Ordering::Less => println!("Too small!"),
+            Ordering::Greater => println!("Too big!"),
+            Ordering::Equal => {
+                println!("You win!");
+                break;
+            }
+        }
+    }
+}
+
+Dodavanjem break linije izlazimo iz petlje kad user pogodi tačan broj. Izlaz iz petlje je i izlaz iz programa, pošto je petlja poslednji deo main funkcije.
+
+
+HANDLOVANJE INVALIDNOG INPUTA
+
+Loša je praksa prekidati igru kad user pogreši broj, tako taj deo treba da ignorujemo da bi user mogao da ponastavi da pogadja. 
+
+io::stdin()
+            .read_line(&mut guess)
+            .expect("Failed to read line");
+
+        let guess: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+
+        println!("You guessed: {guess}");
+
+        // --snip—
+
+Prebacujemo se sa expect poziva na match expression da bismo sa krešovanja na error prešli na handle on error. Parse metoda vraća Result enum sa variantsima Ok i Err i ovde ponovo koristimo match izraz.  Ako parse() uspe da pretvori string u broj, vratiće se Ok i rezultatni broj. Taj ok će se metchovati sa paternom prvog arma i match izraz će vratiti samo num vrednost koji je parse metoda proizvela i smestice je u ok vrednost. Taj broj će se potom smestiti u novu guess promenljivu koju kreiramo. Ako parse() ne uspe da pretvori string u broj vratiće Err vrednost sa više informacija o erroru. Err vrednost se metchuje sa Err(_) paternom drugog arma. Donja crta je catchcall _ vrednost. U ovom primeru mi hoćemo da metchujemo sve err vrednosti bez obzira na informaciju koju nose. I tako će program izvršiti kod drugog arma continue koji govori programu da nastavi u sledeću iteraciju loopa i pitati za novi guess. Na ovaj način efikasno ignorujemo sve errore na koje parse() može da naidje. Sada bi u programu sve trebalo da radi.
+
+$ cargo run
+   Compiling guessing_game v0.1.0 (file:///projects/guessing_game)
+    Finished dev [unoptimized + debuginfo] target(s) in 4.45s
+     Running `target/debug/guessing_game`
+Guess the number!
+The secret number is: 61
+Please input your guess.
+10
+You guessed: 10
+Too small!
+Please input your guess.
+99
+You guessed: 99
+Too big!
+Please input your guess.
+foo
+Please input your guess.
+61
+You guessed: 61
+You win!
+
+Na kraju samo treba da izbrišemo liniju koja printuje secret number, i dobijamo ceo kod.
+
+use rand::Rng;
+use std::cmp::Ordering;
+use std::io;
+
+fn main() {
+    println!("Guess the number!");
+
+    let secret_number = rand::thread_rng().gen_range(1..=100);
+
+    loop {
+        println!("Please input your guess.");
+
+        let mut guess = String::new();
+
+        io::stdin()
+            .read_line(&mut guess)
+            .expect("Failed to read line");
+
+        let guess: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+
+        println!("You guessed: {guess}");
+
+        match guess.cmp(&secret_number) {
+            Ordering::Less => println!("Too small!"),
+            Ordering::Greater => println!("Too big!"),
+            Ordering::Equal => {
+                println!("You win!");
+                break;
+            }
+        }
+    }
+}
+
