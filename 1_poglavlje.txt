@@ -1,0 +1,116 @@
+
+1.	GETTING STARTED 
+
+1.2	Hello world 
+
+fn main() { 
+println!("Hello, world!"); 
+} 
+
+Komande za pokretanje programa:
+
+rustc main.rs 
+.\main.exe 
+Hello, world! 
+
+Anatomija Rust programa: 
+
+fn main() { 
+} 
+
+Main funkcija se uvek prva izvršava u Rust programu . Telo funkcije se nalazi u vitičastim zagradama.Unutar njega se nalazi print funkcija. Ono što primećujemo je da Rust indentuje sa 4 razmaka a ne sa tabom. Drugo, Println! Je makro, oni imaju drugačija pravila od običnih funkcija. Četvrto, izraz završavamo sa; i da sledeći može da počne. Uglavnom sve linije koda u Rustu završavaju sa ;. 
+
+
+Kompajlirnje I Runovanje su odvojeni koraci 
+
+Prvo moramo da kompajliramo kod i za to koristimo komandu rustc i prosledjujemo fajl koji hoćemo da se kompjlira - rustc main.rs. Ako smo uspešno kompajlirali, videcemo 3 fajla main.exe (executable file) main.pdb (debugging extenzija), main.rs (source file). Kompajlirani fajl runujemo sa komandom .\main.exe. I izvršiće program. 
+Rust je a head of time compiled jezik, što znači da ako kompajliramo program, možemo nekom drugom da damo executable I on može da runuje bez da instalira Rust, što nije slučaj sa drugim jezicima npr pythonom. Kompjliranje samo sa rustc komandom je ok za manje programe ali za veće nam treba Cargo tooling. 
+
+1.3 Hello Cargo 
+
+Cargo je build sistem I package manager. On hendluje bildovanje projekata, download biblioteka (dependecija) I gradjenje sopstvenih biblioteka. Cargo dolazi instaliran sa Rustom cargo –version. 
+Kreiranje projekta sa Cargom $ cargo new hello_cargo, cd hello_cargo. Cargo je definisao 2 fajla I jedan folder za nas. Cargo.toml fajl I src folder sa main.rs fajlom. Takodje je inicijalizovao git repozitori sa .gitignore fajlom. Git fajlovi nece biti generisani sa komandom cargo new u postojecem git repozitorijumu. Možemo da overrajdujejmo ovo ponašanje sa komandom cargo new --vcs=git. Sa –vcs flagom biramo da ne koristimo version control. 
+
+
+
+Cargo.toml 
+
+[package] 
+name = "hello_cargo" 
+version = "0.1.0" 
+edition = "2021" 
+
+TOML (Tom’s Obvious, Minimal Language) format, koji je kofigurise Cargo. 
+Prva linija [package] je section heading I navodi statement koji definišu paket. 
+Linija [dependencies] definise spoljašnje dependencije. 
+U Rustu, paketi koda nazivamo Crates. 
+Cargo očekuje da nasi source fajlovi budu uskladišteni u src folderu. Top level folder namenjen je readme fajlu, licence informacije, konfiguracioni fajlovi itd… 
+
+
+BUILDING AND RUNNING CARGO PROJECT 
+
+Komanda Cargo build: 
+
+cargo build 
+Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo) 
+Finished dev [unoptimized + debuginfo] target(s) in 2.85 secs 
+
+Ova komanda kreira executable file u target\debug\hello_cargo.exe, u našem a ne u trenutnom folderu. Zato sto debug build defaultni build, cargo stavlja binary u debug folder. Executable možemo da pokrenemo sa ovom komandom: 
+.\target\debug\hello_cargo.exe 
+Kada pokrenemo Cargo build po prvi put on takodje kreira cargo.lock u top level folderu. On vodi računa o tačnim verzijama dependencija u našem projektu. Cargo automatski menadžuje ovaj content za nas. 
+Možemo da koristimo komandu Cargo Run koja će istovremeno kompajlirati i runuvati naš kod. 
+
+cargo run 
+Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs 
+Running `target/debug/hello_cargo` 
+Hello, world! 
+
+Cargo run je mnogo uobičajeniji način za ranovanje našeg koda. 
+Ukoliko promenimo source kod cargo će rebildovati kod I dobićemo drugačiju poruku: 
+
+cargo run 
+Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo) 
+Finished dev [unoptimized + debuginfo] target(s) in 0.33 secs 
+Running `target/debug/hello_cargo` 
+Hello, world! 
+
+
+Cargo check je komanda koja brzo proverava da li se nas kod kompajlira ali ne proizvodi executable. 
+
+cargo check 
+Checking hello_cargo v0.1.0 (file:///projects/hello_cargo) 
+Finished dev [unoptimized + debuginfo] target(s) in 0.32 sec 
+
+Check je zgodan zato što je mnogo brži od builda zato što ne proizvodi executable. Na ovaj način možemo da ubrzamo proces našeg rada zato što konstantno proveravamo da li se naš kod kompjlira. Na kraju kad smo spremni da napravimo executable runujemo build. 
+
+Upotreba Cargo-a: 
+
+• Kreiramo projekte sa cargo new 
+• Buildujemo projekte sa cargo build 
+• Buildujemo I runujemo projekte sa cargo run 
+• Proveravamo da li se kod kompajlira sa cargo check bez da proizvodimo executable. 
+• Cargo čuva rezultate u target/build folderu 
+
+
+
+BUILDING FOR RELEASE 
+
+Kada je program spreman za release koristimo komandu build –release da ga kompajliramo sa optimizacijom. Ova komanda će stvoriti exectuble u target/release folderu umesto target/debug folderu. Optimizacija čini naš program bržim ali je I vreme kompajliranja duže. Zato postoje 2 različita profila: jedan za development kada rebildujemo brzo I često I jedan za build finalnog programa koji ćemo predati useru I koji se neće rebildovati ali ce biti veoma brz. 
+
+
+CARGO KONVENCIJE 
+
+Za jednostavne programe dovoljno je da koristimo rustc ali čim program počne da raste treba da koristimo cargo. Iako Hello Cargo program deluje jednostavno, on obuhvata sav potreban tooling koji nam treba. 
+Ako radimo na nekom postojećem projektu, možemo da proverimo kod koristeci Git, kloniramo taj projekat prebacimo se u njegov folder I bildujemo: 
+
+git clone example.org/someproject 
+cd someproject 
+cargo build 
+
+Za više informacija pogledati dokumentaciju. 
+
+
+SUMMARY 
+
+Rustup koristimo da instaliramo poslednju stablinu verziju Rusta.
+Updajtejemo noviju verziju.
