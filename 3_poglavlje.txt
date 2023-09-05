@@ -1,0 +1,713 @@
+3.UOBIČAJENI PROGRAMERSKI KONCEPTI
+
+3.1 PROMENLJIVE I MUTABILNOST
+
+Po defoltu promeljive su imutabilne. Na ovaj način se postiže bezbednost i konkurentnost. Promenljive možemo napraviti mutabilnim. Ako dodelimo vrednost nekoj promenljivoj vezanoj za  neko ime, vrednot te ptomenljive više ne možemo da menjamo.
+          fn main() {
+    let x = 5;
+    println!("The value of x is: {x}");
+    x = 6;
+    println!("The value of x is: {x}");
+}
+
+Kada runujemo ovaj program, dobićemo error:
+$ cargo run
+   Compiling variables v0.1.0 (file:///projects/variables)
+error[E0384]: cannot assign twice to immutable variable `x`
+ --> src/main.rs:4:5
+  |
+2 |     let x = 5;
+  |         -
+  |         |
+  |         first assignment to `x`
+  |         help: consider making this binding mutable: `mut x`
+3 |     println!("The value of x is: {x}");
+4 |     x = 6;
+  |     ^^^^^ cannot assign twice to immutable variable
+
+For more information about this error, try `rustc --explain E0384`.
+error: could not compile `variables` due to previous error
+
+Ovako nam kompAjler pomaže da ndjemo greške u programu. Dobili smo poruku cannot assign twice to immutable variable `x`. Rust kompajler garantuje da se promenljiva neće promeniti. Ako dodamo mut keyword, promenljiva postaje mutabilna i njenu vrednost možemo menjati.
+ 
+ fn main() {
+    let mut x = 5;
+    println!("The value of x is: {x}");
+    x = 6;
+    println!("The value of x is: {x}");
+}
+
+Kada runujemo ovaj program dobijemo rezultat:
+
+$ cargo run
+   Compiling variables v0.1.0 (file:///projects/variables)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.30s
+     Running `target/debug/variables`
+The value of x is: 5
+The value of x is: 6
+
+Na nama je da odlučimo da li ćemo koristiti mutabilnu ili imutabilnu vrednost.
+
+KONSTANTE
+Kao i konstante i promenljive su vezane za ime ime i ne mogu da se menjaju ali postoje neke razlike: Sa konstantama ne možemo da koristimo mut keyword. Konstante nisu samo imutabilne po defoltu one su uvek imutabilne. Konstante koriste const keyword i vrednosti moraju biti anotirane. Konstante mogu biti deklarisane u bilo kojem scopeu, najčesšće na globalu. Konstante mogu biti vezane jedino za constant izraz a ne za rezultat same vrednosti koje mogu biti sračunate samo u runtimeu: const THREE_HOURS_IN_SECONDS: u32 = 60 * 60 * 3; Velika slova i donja crta su Rustova naming notacija za const. Kompajleru je lakše da izračuna vrednost ovog izraza. Radije nego da prosledimo konkretnu vrednost koja bi bila 10,800. Konstante su validne za celukupno vreme trajanja programa u scopeu u kom su deklarisane. Nije loša praksa imati jedno mesto u kodu u kom se menja hardkodovana vrednost.
+
+SHADOWING
+U Rustu možemo da deklarišemo promenljivu sa istim imenom kao prethodna promenljiva. To znači da je prva promenljiva shadow-ovana od strane druge promenljive, tako da kompajler sada gleda drugu promenljivu. Promenljiva traja do kraja scopea ili dok je neka druga ne overshadowuje.
+
+fn main() {
+    let x = 5;
+
+    let x = x + 1;
+
+    {
+        let x = x * 2;
+        println!("The value of x in the inner scope is: {x}");
+    }
+
+    println!("The value of x is: {x}");
+}
+
+Program ce prvo odstampati 12 pa 6:
+
+$ cargo run
+   Compiling variables v0.1.0 (file:///projects/variables)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.31s
+     Running `target/debug/variables`
+The value of x in the inner scope is: 12
+The value of x is: 6
+Shadowing se razlikuje od mut promenljivih zato što ćemo dobiti compile-time error ako izostavimo let keyword. Druga razlika je da sa upotrebom let keyworda mi kreiramo novu promenljivu i reuusujemo ime a pri tom možemo i da promenimo tip promenljive. 
+let spaces = "   ";
+    let spaces = spaces.len();
+Prva promenljiva je string druga broj.
+Ukoliko upotrebimo mut na ovoj promenljivoj dobićemo compile-time-error
+    let mut spaces = "   ";
+    spaces = spaces.len();
+The error says we’re not allowed to mutate a variable’s type:
+
+$ cargo run
+   Compiling variables v0.1.0 (file:///projects/variables)
+error[E0308]: mismatched types
+ --> src/main.rs:3:14
+  |
+2 |     let mut spaces = "   ";
+  |                      ----- expected due to this value
+3 |     spaces = spaces.len();
+  |              ^^^^^^^^^^^^ expected `&str`, found `usize`
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `variables` due to previous error
+
+
+
+3.2 DATA TYPES 
+Postoje 2 subseta tipova: skalarni i compound (složeni). Rust je staticly typed jezik tako da mora da zna tipove svih promenljivih u compile tajmu. Kompajler uglavnom može da zaključi o kom tipu se radi na osnovu vrednosti i načina korišćenja. U komplikovanijim slučajevima treba dodati anotaciju:
+let guess: u32 = "42".parse().expect("Not a number!");
+Ako ne dodamo type anotaciju :u32 dobićemo error koji kaže da je kompajleru potrebno više informacija:
+$ cargo build
+   Compiling no_type_annotations v0.1.0 (file:///projects/no_type_annotations)
+error[E0282]: type annotations needed
+ --> src/main.rs:2:9
+  |
+2 |     let guess = "42".parse().expect("Not a number!");
+  |         ^^^^^
+  |
+help: consider giving `guess` an explicit type
+  |
+2 |     let guess: _ = "42".parse().expect("Not a number!");
+  |              +++
+
+For more information about this error, try `rustc --explain E0282`.
+error: could not compile `no_type_annotations` due to previous error
+
+SKALARNI TIPOVI
+Skalarni tipovi predstavljaju pojedinačnu vrednost. Rust ima primarne skalarne tipove: integere, floating pointe, numbere, booleane i karaktere. 
+
+
+
+
+INTEGER TIP
+Integer je ceo broj. Postoje unsigned i signed integers. 
+Length	Signed	Unsigned
+8-bit	i8	u8
+16-bit	i16	u16
+32-bit	i32	u32
+64-bit	i64	u64
+128-bit	i128	u128
+arch	isize	usize
+Svaka varijanta moze biti signed ili unsigned i ima explicitnu veličinu u bajtovima. Unsigned integers imaju samo pozitivnu vrednost. Unsigned imaju samo pozitivnu vrednost jer nemaju i zato nemaju potrebu da imaju znak ispred. Svaka signed varijanta može da storuje brojeve od –( 2n-1 ) do 2n-1 inkluzivno, gde je n broj bitova koje varijanta koristi. Tako da i8 čuva brojeve od -(27) to 27 – 1, što je jednako -128 do 127. Unsigned varijante čuvaju brojeve od 0 do 2n – 1, tako da u8 storuje brojeve od 0 do 28 – 1, sto je jednako 0 do 255. Isize i uszie tipovi zavise od arhitekture naših racunara. Integer literale možemo napisati na sledeće načine:
+Number literals	Example
+Decimal	98_222
+Hex	0xff
+Octal	0o77
+Binary	0b1111_0000
+Byte (u8 only)	b'A'
+
+Možemo koristiti i donju crtu radi boljeg prikaza 1_000 je isto što i 1000. Kao defaultni tip Rust koristi i32. Isize i usize koristimo uglavnom za kolekcije.
+
+
+
+
+
+
+
+INTEGER OVERFLOW
+Ako npr imamo tip u8 koji storuje brojeve od 0 do 255, ako pokušamo tom tipu da dodamo vrednost 256 dogodice će se int overflow. Ovo izaziva panic u runtimeu. Ako kompjliramo sa –release flagom, Rust ne radi proveru overflowa nego izvršava 2 komplementarna wrapovanja. Za vrednosti veće od maximuma Rust wrapuje vrednost i pretvara u minimalni broj tog tipa. Za tip u8 za br 256 bice 0, za 257 bice 1. itd..
+Program neće panicovati ali nećemo imati vrednosti brojeva koje zelimo. Wrapping ponašanje možemo smatrati errorom.  Za hendlovanje overflowa možemo koristiti neke od metoda iz std biblioteke :
+•	Wrap u svim modovima wrapping_* metode kao npr: wrapping_add.
+•	Return none vrednost ako koristimo checked_* metode.
+•	Vraćamo boolean ako koristimo overflowing_* metode.
+•	Zasitimo metode sa min ili max vrednošću sa saturating_* metodama.
+
+FLOATING POINT TIPOVI
+Rust ima 2 primitivna tipa za floating-point brojeve, koji su brojevi za decimalne brojeve. Ti tipovi su f32 i f64, koji su 32 i 64 bita respektivno. Defoltni tip je f64 zato što na modernim CPUovima iste brzine kao f32 ali pruža veću preciznost. Svi floating point tipovi su signed. 
+fn main() {
+    let x = 2.0; // f64
+
+    let y: f32 = 3.0; // f32
+}
+
+
+
+Floating point brojevi su reprezentovani po IEEE-754 standardu. F32 je single precision float a f64 double. Floating brojevi dozvoljavaju sve matematičke operacije.
+fn main() {
+    // addition
+    let sum = 5 + 10;
+
+    // subtraction
+    let difference = 95.5 - 4.3;
+
+    // multiplication
+    let product = 4 * 30;
+
+    // division
+    let quotient = 56.7 / 32.2;
+    let truncated = -5 / 3; // Results in -1
+
+    // remainder
+    let remainder = 43 % 5;
+}
+
+BOOLEAN TIP
+fn main() {
+    let t = true;
+
+    let f: bool = false; // with explicit type annotation
+}	
+
+
+
+KARAKTER TIP
+Ovo je Rustov najprimitivniji alfabetski tip. 
+fn main() {
+    let c = 'z';
+    let z: char = 'ℤ'; // with explicit type annotation
+    let heart_eyed_cat = '😻';
+}
+Char literali koristi jednostruke navodnike naspram string literala koji koriste dvostruke. Rustov char tip je 4 bita veličine i reprezentuje Unicode skalarnu vrednost. Što znači da može da reprezentuje mnogo više nego ASCII. Validne vrednosti char-a u Rustu su i Japanska, koranska, kineska slova, emotikoni i zero-width space slova. Unicode skalarne vrednosti su u rasponu od U+0000 do U+D7FF i U+E000 do U+10FFFF inkluzivno. 
+
+COMPOUND TIPOVI
+Compound tipovi mogu da grupišu više tipova u jedan tip. Postoje 2 primitivna compound tipa: Tupple i Array.
+Tupple je opšti način grupisanja više vrednosti sa različitim tipovima u jedan složeni tip. Oni imaju fiksnu dužinu i jednom definisani ne mogu da se povećavaju ili smanjuju. Tupple definišemo sa vrednostima razdvojenim zarezom, kojoj na svakoj poziciji odgovara odredjeni tip, koji ne moraju da budu isti.
+fn main() {
+    let tup: (i32, f64, u8) = (500, 6.4, 1);
+}
+Promenljiva tup vezuje se za ceo tupple, zato što se za tupple smatra da je jedan ceo pojedinačni cpmpound element. Da pristupimo pojedinačnoj vrednosti tuppla možemo da koristimo matching patern da destruktuirešemo vrednost tupla.
+fn main() {
+    let tup = (500, 6.4, 1);
+
+    let (x, y, z) = tup;
+
+    println!("The value of y is: {y}");
+}
+Elementu možemo da pristupimo i sa tačkom, koju prati index vrednosti kojoj želimo da pristupimo. 
+fn main() {
+    let x: (i32, f64, u8) = (500, 6.4, 1);
+
+    let five_hundred = x.0;
+
+    let six_point_four = x.1;
+
+    let one = x.2;
+}
+Tupple koji ne poseduje nijednu vrednost se zove unit.  Izrazi implicitno vraćaju unit vrednost ako ne vraćaju nijednu drugu vrednost. 
+NIZOVI
+Još jedan način da napravimo kolekciju su nizovi ali za razliku od tupplova, nizovi moraju biti istog tipa.  Nizovi u Rustu imaju fixnu veličinu. 
+fn main() {
+    let a = [1, 2, 3, 4, 5];
+}
+Nizovi su korisni ako hoćemo da se naši podaci alociraju na stack a ne na heap ili kad želimo da uvek imamo fiksan broj elemenata. Nizovi nisu fleksibilni kao vektori. Nizovi su korisni kada znamo koliko nam tačno treba lemenata u kolekciji, npr meseci u godini:
+let months = ["January", "February", "March", "April", "May", "June", "July",
+              "August", "September", "October", "November", "December"];
+Sintaksa za niz:
+let a: [i32; 5] = [1, 2, 3, 4, 5];
+Možemo napisati i ovako ako hoćemo da svaki element ima istu vrednost:
+let a = [3; 5];
+to je kevivalentno:
+let a = [3, 3, 3, 3, 3];
+Pristupanje elementu niza:
+Niz je parče koda fiksne veličine na stacku tako da elementima niza možemo pristupati preko indeksa.
+fn main() {
+    let a = [1, 2, 3, 4, 5];
+
+    let first = a[0];
+    let second = a[1];
+}
+
+Nepravilno pristupanje elementima niza:
+use std::io;
+
+fn main() {
+    let a = [1, 2, 3, 4, 5];
+
+    println!("Please enter an array index.");
+
+    let mut index = String::new();
+
+    io::stdin()
+        .read_line(&mut index)
+        .expect("Failed to read line");
+
+    let index: usize = index
+        .trim()
+        .parse()
+        .expect("Index entered was not a number");
+
+    let element = a[index];
+
+    println!("The value of the element at index {index} is: {element}");
+}
+
+Ovaj kod se pravilno kompajlira. Ako ranujemo ovaj program sa cargo run, I prosledimo vrednost 0, 1, 2, 3 ili 4, isprintaće se tačna vrednost za index tog niza. Medjutim ukoliko prosledimo vrednost izvan niza, npr. 10, konzola će ispisati :
+thread 'main' panicked at 'index out of bounds: the len is 5 but the index is 10', src/main.rs:19:19
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Program je rezultirao sa runtime erorom sa razlogom korišćenja netacne vrednoti za indeksing operaciju. 
+Ako je index veći ili jednak od dužine niza, Rust će panikovati. Ova provera mora da se odradi u runtajmu zato što kompajler ne zna koju će vrednost user da prosledi. Ovo je primer Rustovog memory safety principa u akciji. U mnogim low level jezicima ovakva provera ne postoji, I kad prosledimo netačan index, možemo da pristupimo netačnoj memoriji. Rust nas stiti od ovog errora tako što odmah izlazi iz programa umesto da pristupi netačnoj memoriji. 
+
+3.3 FUNKCIJE
+Keyword za funkcije je fn, main funkcija je ulazna tačka za mnoge programe, koja nam dozvoljava da deklarišemo nove funkcije. Rust koristi snake case notaciju za funckiju I promenljive tako da one počinju malim slovom I odvojene su donjom crtom. 
+fn main() {
+    println!("Hello, world!");
+
+    another_function();
+}
+
+fn another_function() {
+    println!("Another function.");
+}
+
+Funkciju možemo da deklarišemo I posle maina, bitno je samo da je u scopeu u kojem ga caller vidi. Funkcije mogu da primaju parametre ili argumente koje su konkretne vrednosti. 
+
+fn main() {
+    another_function(5);
+}
+
+fn another_function(x: i32) {
+    println!("The value of x is: {x}");	
+}
+
+
+Kada pokrenemo program sa cargo run, dobijemo:
+
+$ cargo run
+   Compiling functions v0.1.0 (file:///projects/functions)
+    Finished dev [unoptimized + debuginfo] target(s) in 1.21s
+     Running `target/debug/functions`
+The value of x is: 5
+
+U funkcijama moramo deklarisati tip parametra. To je namerna odluka u dizajnu Rusta i zahtevajući anotacije tipa u definiciji funkcije nam omogućava da kompajler više ne traži tip u ostatku koda I stoga ne moramo više ad ga definišemo. Kompajler takodje može I da nam pruži odgavarajuće error poruke ako zna koje tipove funkcije da očekuje. Višestruke parametre razdvajamo zarezima. 
+fn main() {
+    print_labeled_measurement(5, 'h');
+}
+
+fn print_labeled_measurement(value: i32, unit_label: char) {
+    println!("The measurement is: {value}{unit_label}");
+}
+
+
+Kada pokrenemo ovaj kod, dobijemo:
+
+$ cargo run
+   Compiling functions v0.1.0 (file:///projects/functions)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.31s
+     Running `target/debug/functions`
+The measurement is: 5h
+
+
+STATEMENTI I IZRAZI
+Tela funkcije se sastoje od niza izjava, statementa, koje se opciono završavaju izrazom. 
+
+•	Izjave su instrukcije koje izvršavaju neku radnju I ne vraćaju vrednost.
+•	Izrazi se evaluiraju do rezultante vrednosti.
+•	
+Primer izjave, statementa:
+fn main() {
+    let y = 6;
+}
+Statementi ne vraćaju vrednosti I samim tim ne možemo dodeliti let vrednosti drugoj promenljivoj, dobićemo error.
+fn main() {
+    let x = (let y = 6);
+}
+Statement let y=6 ne vraća vrednost, tako da x nema za čega da se binduje. Ovo je razlika u odnosu na C i Ruby, gde dodela vraća vrednost dodele i tamo možemo da napišemo x = y = 6, tako da i x i y imaju vrednost 6. 
+Izrazi vraćaju vrednost: izraz 5 + 6 evaluira vrednosti 11. Izrazi mogu biti delovi statementa: let y = 6 je izraz koji evaluira vrednost 6. Poziv funkcije izraz. Poziv macroa je izraz. Kreiranje novog blok scopea sa vitičastim zagradama je izraz. 
+
+fn main() {
+    let y = {
+        let x = 3;
+        x + 1
+    };
+
+    println!("The value of y is: {y}");
+}
+Blok u ovom slučaju evaluira vrednost 4.
+{
+    let x = 3;
+    x + 1
+}
+Vrednost se vezuje za  y kao deo let statementa. Linija koda x + 1 nema tačku zarez na kraju. Izrazi ne uključuju završnicu sa tačka zarezom. Ako dodamo tačku zarez na kraj izraza, pretvaramo ga u statement I onda neće vratiti vrednost. 
+
+FUNKCIJE SA POVRATNOM VREDNOSTI
+Funkcije mogu da vrate vrednost jedino kodu koji ih poziva. Povratne vrednosti ne imenujemo ali moramo deklarisati njihov tip nakon strelice ->. U Rustu, povratne vrednost funkcije je sinonim za vrednost konačnog izraza u bloku tela funkcije. Iz funkcije se možemo vratiti i ranije upotrebom return keyworda I navodjenjem vrednosti ali većina funkcija implicitno vraća poslednji izraz.
+fn five() -> i32 {
+    5
+}
+
+fn main() {
+    let x = five();
+
+    println!("The value of x is: {x}");
+}
+U ovoj funckiji nema poziva funkcija, makroa pa čak ni naredbi, samo broj 5, sam po sebi. Ovo je savršeno validna funkcija u Rustu. Tip povratne vrednosti funkcije je i32.
+$ cargo run
+   Compiling functions v0.1.0 (file:///projects/functions)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.30s
+     Running `target/debug/functions`
+The value of x is: 5
+
+Pet je povratna vrednost funkcije tipa i32. Postoje dve bitne stvari: let x = five(); pokazuje da koristimo povratnu vrednost funkcije da inicijalizujemo promenljivu. Ta linija je ista kao da smo napisali: let x = 5. Drugo, funkcija zvana 5 nema parametre i definiše tip povratne vrednosti ali je telo funkcije sačinjeno samo od broja 5 bez tačke zareza na kraju zato što hoćemo da vratimo tu vrednost. 
+
+fn main() {
+    let x = plus_one(5);
+
+    println!("The value of x is: {x}");
+}
+
+fn plus_one(x: i32) -> i32 {
+    x + 1
+}
+
+
+
+Ako runujemo ovaj kod, konzola će ispisati vrednost 6 ali ako stavimo tačku zarez na kraj linije x + 1 i promenimo je iz izraza u statement, dobićemo error.
+fn main() {
+    let x = plus_one(5);
+
+    println!("The value of x is: {x}");
+}
+
+fn plus_one(x: i32) -> i32 {
+    x + 1;
+}
+
+
+
+Dobijamo sledeći error:
+$ cargo run
+   Compiling functions v0.1.0 (file:///projects/functions)
+error[E0308]: mismatched types
+ --> src/main.rs:7:24
+  |
+7 | fn plus_one(x: i32) -> i32 {
+  |    --------            ^^^ expected `i32`, found `()`
+  |    |
+  |    implicitly returns `()` as its body has no tail or `return` expression
+8 |     x + 1;
+  |          - help: remove this semicolon to return this value
+
+Error pokazuje da se tipovi ne podudaraju. Definicija funkcije kaže da će vrati vrednost i32 ali statement ne evaluira vrednost izražen zagradama (), unit tip. Stoga se ništa ne vraća.
+
+3.4 COMMENTS
+Programeri nastoje da naćine svoj kod što čitljivijim ali je ponekad potrebno dodatno objašnjenje. To se moze učiniti komentarima.
+// So we’re doing something complicated here, long enough that we need
+// multiple lines of comments to do it! Whew! Hopefully, this comment will
+// explain what’s going on.
+Ili na istoj liniji kao kod.
+fn main() {
+    let lucky_number = 7; // I’m feeling lucky today
+}
+
+Ali najčešće je iznad linije koda na koji se odnosi:
+fn main() {
+    // I’m feeling lucky today
+    let lucky_number = 7;
+}
+
+
+
+3.5 CONTROL FLOW
+Najčešći konstrukti koji vam omogućavaju da kontrolišete tok izvršavanja Rust koda su if izrazi i petlje.
+
+IF IZRAZI
+If izraz nam dozvoljava da granamo naš kod u zavisnosti od uslova. Navedemo uslov I kažemo ako je ovaj uslov ispunjen, pokrenite ovaj blok koda I obrnuto.
+
+fn main() {
+    let number = 3;
+
+    if number < 5 {
+        println!("condition was true");
+    } else {
+        println!("condition was false");
+    }
+}
+Blokovi koda pridruženi if izrazima se ponekad zovu arms. Opciono možemo da uključimo I else izraz I damo alternativu bloku koda ako uslov evaluira false. Ako ne pružimo else izraz a uslov evaluira false, program će preskočiti if blok I preći na narednu liniju koda.
+
+
+$ cargo run
+   Compiling branches v0.1.0 (file:///projects/branches)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.31s
+     Running `target/debug/branches`
+condition was true	
+Ako promenimo uslov:
+Let number = 7;
+
+
+I pokrenemo kod, dobijamo:
+
+$ cargo run
+   Compiling branches v0.1.0 (file:///projects/branches)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.31s
+     Running `target/debug/branches`
+condition was false
+
+Uslov mora biti bool, inače dobijamo error. 
+
+fn main() {
+    let number = 3;
+
+    if number {
+        println!("number was three");
+    }
+}
+
+Pošto nemamo bool uslov, dobijamo sledeci eror:
+$ cargo run
+   Compiling branches v0.1.0 (file:///projects/branches)
+error[E0308]: mismatched types
+ --> src/main.rs:4:8
+  |
+4 |     if number {
+  |        ^^^^^^ expected `bool`, found integer
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `branches` due to previous error
+Eror indikuje da Rust očekuje bool a dobio je integer. Moramo eksplicitno da obezbedimo if sa booleanom kao uslov. 
+
+HENDLOVANJE VISESTRUKIH USLOVA SA ELSE IF
+fn main() {
+    let number = 6;
+
+    if number % 4 == 0 {
+        println!("number is divisible by 4");
+    } else if number % 3 == 0 {
+        println!("number is divisible by 3");
+    } else if number % 2 == 0 {
+        println!("number is divisible by 2");
+    } else {
+        println!("number is not divisible by 4, 3, or 2");
+    }
+}
+	
+
+Kada pokrenemo program dobijamo:
+$ cargo run
+   Compiling branches v0.1.0 (file:///projects/branches)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.31s
+     Running `target/debug/branches`
+number is divisible by 3
+
+I pored toga što je 6 deljivo sa 2, Rust izvršava samo blok koji važi za prvi true uslov. Korišćenje previše else if uslova može da uneredi kod zato je dobra praksa refaktorisati kod.
+
+
+KORIŠĆENJE IF U LET STATEMENTU
+
+Zato što je if izraz možemo ga koristiti sa desne strane let statementa da dodelimo ishod promenljivoj.
+
+fn main() {
+    let condition = true;
+    let number = if condition { 5 } else { 6 };
+
+    println!("The value of number is: {number}");
+}
+
+Kada pokrenemo kod dobijamo:
+
+$ cargo run
+   Compiling branches v0.1.0 (file:///projects/branches)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.30s
+     Running `target/debug/branches`
+The value of number is: 5
+Blokovi koda se evaluiraju prema poslednjem izrazu u njima, I brojevi su sami po sebi izrazi. U ovom slučaju, vrednost celog if izraza zavisi od bloka koda koji izvršava. To znači da vrednosti koje imaju potencijal da budu rezultat svakog arma if bloka moraju biti istog tipa. Ako se tipovi razlikuju, dobićemo eror:
+
+fn main() {
+    let condition = true;
+
+    let number = if condition { 5 } else { "six" };
+
+    println!("The value of number is: {number}");
+}
+Kada pokrenemo kod, dobijamo eror:
+
+$ cargo run
+   Compiling branches v0.1.0 (file:///projects/branches)
+error[E0308]: `if` and `else` have incompatible types
+ --> src/main.rs:4:44
+  |
+4 |     let number = if condition { 5 } else { "six" };
+  |                                 -          ^^^^^ expected integer, found `&str`
+  |                                 |
+  |                                 expected because of this
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `branches` due to previous error
+Ovo ne radi zato što promeljive u if else bloku moraju imati jedan tip…
+
+PONAVLJANJE SA PETLJAMA
+Rust ima 3 vrste petlji: loop, for, while…
+
+
+PONAVLJANJE KODA SA LOOP PETLJOM
+Loop keyword govori Rustu da izvršava blok koda iznova I iznova dok mu izričito kažemo da prestane.
+fn main() {
+    loop {
+        println!("again!");
+    }
+}
+Ovaj program će ispisivati iznova I iznova again! Dok ga ne zaustavimo ručno sa ctr + c ili sa break keywordom. 
+
+VRAĆANJE VREDNOSTI IZ PETLJE
+Jedna od upotrebi petlje je da ponovo pokušamo operaciju za koju znamo da može da fejluje, npr. Provera da li je thread završio svoj posao. Takodje ćemo možda morati da prosledimo rezultat operacije iz petlje u ostatak koda. Da bismo to uradili, vrednost koju želimo da vratimo iz petlje moramo da definišemo u izrazu iza break-a. 
+
+fn main() {
+    let mut counter = 0;
+
+    let result = loop {
+        counter += 1;
+
+        if counter == 10 {
+            break counter * 2;
+        }
+    };
+
+    println!("The result is {result}");
+}
+
+
+U ovom slučaju ćemo iz petlje vratiti vrednost 20, koja će biti zapisana u promenljivoj result.
+
+RAZDVAJANJE VIŠESTRUKIH PETLJI
+Ako imamo petlje unutar petlji, break I continue se primenjuju na najuntrašnjajiju petlju. Opciono možemo da stavimo label na petlju na koju kasnije možemo da primenimo break I continue da se ne bi odnosilo na najdublju petlju. Labeli petlje moraju početi jednim navodnikom.
+
+
+
+
+fn main() {
+    let mut count = 0;
+    'counting_up: loop {
+        println!("count = {count}");
+        let mut remaining = 10;
+
+        loop {
+            println!("remaining = {remaining}");
+            if remaining == 9 {
+                break;
+            }
+            if count == 2 {
+                break 'counting_up;
+            }
+            remaining -= 1;
+        }
+
+        count += 1;
+    }
+    println!("End count = {count}");
+}
+
+Spoljašnja petlja ima naziv ‘counting_up I inkrementovaće vrednost od 0 do 2. Unutrašnje petlja bez oznake se dekrementuje od 10 do 9. Prvi break koji se ne odnosi na label će izaći iz unutrašnje petlje samo. Break koji se odnosi na ‘counting_up label će izaći samo iz spoljašnje petlje. Ovaj kod će printati:
+
+
+
+
+$ cargo run
+   Compiling loops v0.1.0 (file:///projects/loops)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.58s
+     Running `target/debug/loops`
+count = 0
+remaining = 10
+remaining = 9
+count = 1
+remaining = 10
+remaining = 9
+count = 2
+remaining = 10
+End count = 2
+
+KONDICIONALNE WHILE PETLJE
+Program često mora da proceni stanje unutar petlje. Dok je uslov tačan petlja se pokreće. Kada uslov prestane da bude istinit program poziva break zaustavljajući petlju. Ovakvo ponašanje možemo primeniti I sa loop if else break paternom ali Rust već ima mplementiran konstrukt koji se zove while petlja I koji se veoma često koristi.
+fn main() {
+    let mut number = 3;
+
+    while number != 0 {
+        println!("{number}!");
+
+        number -= 1;
+    }
+
+    println!("LIFTOFF!!!");
+}
+Ovaj konstrukt eliminiše mnogo nestovanja koje bi nam bilo neophodno kada bi koristili if else i break. Dok je uslov tačan, kod se izvršava, u suprotno izlazi iz petlje.
+
+PROLAZAK KROZ KOLEKCIJU SA FOR PETLJOM
+
+Kroz kolekciju možemo proći I sa sa while petljom:
+fn main() {
+    let a = [10, 20, 30, 40, 50];
+    let mut index = 0;
+
+    while index < 5 {
+        println!("the value is: {}", a[index]);
+
+        index += 1;
+    }
+}
+Kada pokrenemo program dobićemo sledeće:
+$ cargo run
+   Compiling loops v0.1.0 (file:///projects/loops)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.32s
+     Running `target/debug/loops`
+the value is: 10
+the value is: 20
+the value is: 30
+the value is: 40
+the value is: 50
+
+
+Terminal će ispisati svih 5 vrednosti zato što je 5 uslov. Da ima 6 elemenata u kolekciji, šesti element ne bi ispisao. Medjutim ovaj pristup je sklon greškama jer može izazvati panic u programu ako vrednost indeksa ili testni uslovi nisu tačni. Ako bi kolekcija imla 4 elemenata a ne bi promenili uslov 
+while index < 4 program bi panicovao. Takodje je ovaj pristup spor jer kompajler dodaje runtime kod da izvrsi uslovnu proveru da li je index unutar granica niza na svakoj iteraciji kroz petlju. Mnogo je sažetija alternativa koristi for petlju I izvršiti neki kod za svaku stavku u kolekciji. 
+fn main() {
+    let a = [10, 20, 30, 40, 50];
+
+    for element in a {
+        println!("the value is: {element}");
+    }
+}
+
+Sada ćemo dobiti isti output kao u prethodnom primeru ali smo sada povećali bezbednost koda I eliminisali šansu za bug koji bi mogao da bude rezultat izlaska iz granica niza ili nedostizanja dovoljno daleko da bi se pristupilo nekim itemima niza. Ako koristimo for petlju ne bi morali da brinemo o promeni nekog dela koda ukoliko promenimo broj elemenata niza. 
+
+Sigurnost I sažetost for petlju čine najčešćim konstruktom petlje u Rustu. Čak I u situacijama u kojima želimo da pokrenemo kod odredjeni broj puta kao u primeru odbrojavanja koje koriste while petlju, većina Rust programera bi koristila for petlju. Način da se to uradi bio bi korišćenje opsega koji obezbedjuje standardna biblioteka I koja generiše sve brojeve u nizu počevši od jednog broja I završavajući pre drugog broja.
+
+fn main() {
+    for number in (1..4).rev() {
+        println!("{number}!");
+    }
+    println!("LIFTOFF!!!");
+}
+
