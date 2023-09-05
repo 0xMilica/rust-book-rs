@@ -18,12 +18,12 @@ Anatomija Rust programa:
 fn main() { 
 } 
 
-Main funkcija se uvek prva izvršava u Rust programu . Telo funkcije se nalazi u vitičastim zagradama.Unutar njega se nalazi print funkcija. Ono što primećujemo je da Rust indentuje sa 4 razmaka a ne sa tabom. Drugo, Println! Je makro, oni imaju drugačija pravila od običnih funkcija. Četvrto, izraz završavamo sa; i da sledeći može da počne. Uglavnom sve linije koda u Rustu završavaju sa ;. 
+Main funkcija se uvek prva izvršava u Rust programu. Telo funkcije se nalazi u vitičastim zagradama. Unutar tela f-je se nalazi print funkcija. Ono što primećujemo je da se u Rust-u kôd uvlači sa 4 razmaka, a ne pomoću tab-a. S obzirom na to da je println! makro funkcija, kao takva ima drugačija pravila od običnih funkcija. Izraze završavamo sa ; i tako sledeći može da počne. Uglavnom sve linije kôda u Rust-u završavaju sa ; . 
 
 
-Kompajlirnje I Runovanje su odvojeni koraci 
+Kompajliranje i pokretanje(running) su odvojeni koraci 
 
-Prvo moramo da kompajliramo kod i za to koristimo komandu rustc i prosledjujemo fajl koji hoćemo da se kompjlira - rustc main.rs. Ako smo uspešno kompajlirali, videcemo 3 fajla main.exe (executable file) main.pdb (debugging extenzija), main.rs (source file). Kompajlirani fajl runujemo sa komandom .\main.exe. I izvršiće program. 
+Prvo moramo da kompajliramo kod i za to koristimo komandu rustc i prosledjdujemo fajl koji hoćemo da se kompajlira, na primer: rustc main.rs. Ako je kompajliranje uspešno, pojaviće se 3 fajla: main.exe (executable file) main.pdb (debugging extenzija), main.rs (source file). Kompajlirani fajl pokrećemo pomoću komande .\main.exe koja će izvršiti program. 
 Rust je a head of time compiled jezik, što znači da ako kompajliramo program, možemo nekom drugom da damo executable I on može da runuje bez da instalira Rust, što nije slučaj sa drugim jezicima npr pythonom. Kompjliranje samo sa rustc komandom je ok za manje programe ali za veće nam treba Cargo tooling. 
 
 1.3 Hello Cargo 
