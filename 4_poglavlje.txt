@@ -1,0 +1,437 @@
+4. RAZUMEVANJE OWNERSHIPA
+
+Ownership je Rustova najedinstvenija karakteristika ima duboke implikacije na ostatak jezika. Omogućava Rustu da garantuje bezbednost memorije bez potrbe za Garbage collectorom. 
+
+4.1 ŠTA JE OWNERSHIP ?
+Ownership je skup pravila koje regulišu kako Rust program upravlja memorijom. Neki jezici imaju Garbage collector koji konstantno traži memoriju koja se više ne koristi dok program radi, u nekim jezicima moramo sami da eksplicitno dodelimo I oslobodimo memoriju. Rust koristi treći pristup, memorijom se upravlja kroz sistem vlasništva sa skupom pravila koje proverava kompajler. Ako se neko pravilo prekrši, program se neće kompajlirati. 
+
+STACK I HEAP
+Stack skladišti vrednosti onim redosledom kojim ih dobija I uklanja vrednosti suprotnim redosledom. Ovo se zove last in first out. Dodavanje podataka se naziva guranje na stack a uklanjanje iskakanje sa stacka. Svi podaci koji se čuvaju na stecku moraju imati poznatu fiksnu veličinu. Podaci sa nepoznatom veličinom u vreme kompajliranja ili veličinom koja se može promeniti čuvaju se na heapu.
+Heap je manje organizovan: kada stavimo podatke na heap, zahtevamo odredjenu količinu prostora. Alokator memorije pronalazi prazno mesto na heap-u koje je dovoljno veliko, označava ga kao upotrebi I vraća pokazivač, koji je adresa te lokacije. Ovaj proces se zove alokacija na heap ili samo alokacija (guranje vrednosti na stack se ne smatra alokacijom). Pošto je pokazivač na heapu poznate fiksne veličine, možemo da sačuvamo pokazivač na stacku, ali kad želimo stvarne podatke moramo vratiti pokazivač.
+Guranje na stack je brže od alokacije na heap jer alokator nikad ne mora da traži mesto za skladištenje novih podataka; ta lokacija je uvek na vrhu stacka. Uporedno, alokacija prostora na heapu zahteva više posla jer alokator prvo mora da pronadje dovoljno velik prostor da zadrži podatke, a zatim da izvrši knjigovodstvo da bi se pripremio za sledeću alokaciju.
+Pristup podacima na heapu je sporiji od pristupa podacima na stacku zato što moramo da pratimo pokazivač da bi tamo stigli. Savremeni procesori su brži ako manje barataju u memoriji. Procesor brže radi sa podacima ako su bliže jedni drugima (na stacku).
+Kada pozovemo funkciju, vrednosti prosledjene funkciji, uklučujuči I potencijonalno pokazivače na podatke na heapu I lokalne promenljive na heapu se guraju na stack. Kada se funkcija završi, te vrednosti iskaču iz stacka.
+Ownership rešava problem, koji delovi koda koriste koje podatke na heapu, minimizira količinu dupliranih podataka heapu I čisti neiskorišćene podatke na heapu kako ne bismo ostali bez prostora. 
+
+
+
+PRAVILA OWNERSHIPA
+•	Svaka vrednost u Rustu ima svog vlasnika. 
+•	Istovremeno može biti samo jedan vlasnik. 
+•	Kada owner izadje iz scopea vrednost se ispusta.
+
+SCOPE PROMENLJIVE
+
+Scope je obim u nekom programu za koji je stavka validna.
+    {                      // s is not valid here, it’s not yet declared
+        let s = "hello";   // s is valid from this point forward
+
+        // do stuff with s
+    }
+
+STRING TIP
+Da bismo ilustrovali primer vlasništva potreban nam je složeniji tip koji se čuva na heapu. String literali su zgodni ali nepromenljivi. Ne možemo znati svaku vrednost stringa kada napišemo kod. Npr ako želimo da uzmemo korisnički unos i sačuvamo ga. Tu nam pomaže String tip koji se čuva na heapu, i kao takav može da uskladišti količinu teksta koja nam je nepoznata uvreme kompajliranja. String možemo kreirati od string literala koristeći from funkciju na sledeći način: 
+let s = String::from("hello");
+Sa dvostrukom dvotačkom uvodimo String tip u nas namespace. Ovaj String se može mutirati.
+   let mut s = String::from("hello");
+
+    s.push_str(", world!"); // push_str() appends a literal to a Strin
+
+    println!("{}", s); // This will print `hello, world!`
+
+
+
+
+MEMORIJA I ALOKACIJA
+
+U string literalu znamo sadržaj u vreme kompajliranja tako da je tekst hardkodovan direktno u izvršni fajl. Zbog toga su string literali brzi i efikasni. Ova svojstva dolaze samo iz imutabilnosti string literala. Nažalost ne možemo staviti komad memorije u binari za svaki komad teksta čija je viličina nepoznata u compile timeu i čija se veličina možda promeni za vreme rada programa.
+Da bismo string tipu podržali mutabilni rastući deo texta moramo da alociramo deo memorije na heapu, nepoznatom u compile timeu. To znači:
+•	Memorija se mora tražiti od alokatora memorije u runtimeu.
+•	Moramo naći način da vratimo memoriju alokatoru kada završimo sa Stringom
+Prvi deo radimo mi kada pozovemo String::from, njegova implementacija zahteva memoriju koja joj je potrebna. Drugi deo je teži pošto nemamo Garbage collector koji prati memoriju a ne želimo manuelno da oslobadjamo memoriju. Rust ima drugačiji pristup. Memorija se automatski vraća kada promenljiva koja je poseduje izadje iz scopea. 
+
+{
+        let s = String::from("hello"); // s is valid from this point forward
+
+        // do stuff with s
+    }
+	
+Kada izadjemo iz opsega Rust poziva drop finkciju.
+
+PROMENLJIVE I PODACI U INTERAKCIJI SA MOVE-OM
+Više promenjlivih može da komunicira sa istim podacima na različite načine u Rustu.
+Let x = 5;
+Let y=x;
+Obe vrednosti su jednake 5. Prvo bajndujemo vrednost 5 za promenljivu x zatim kopiramo vrednost x i dodelimo je y. Integeri su jednostavne vrednosti sa fiksnom veličinom i obe vrednosti 5 su gurnute na stack. 
+
+let s1 = String::from("hello");
+    let s2 = s1;
+String se sastoji iz 3 dela: pokazivača na memoriju koja sadrži sadržaj stringa, dužine i kapaciteta. Ova grupa podataka se čuva na stacku. Sa desne strane je memorija na heapu koja sadrži sadržaj.
+
+
+
+
+
+
+
+Dužina je koliko memorije u bajtovima sadržaj stringa trenutno koristi. Kapacitet je ukupna količina memorije u bajtovima koju je string primio od alokatora. Kada promenljivoj s2 dodelimo s1, kopiraju se string podaci, što znači da se kopiraju pokazivač, dužina i kapacitet koji su na stacku. Ne kopiramo podatke koji se nalaze na heapu na koju se pokazivač odnosi.
+
+
+
+
+
+
+
+Ukoliko bi se kopirali podaci sa heapa ta operacija bi bila veoma skupa u smislu performansi tokom izvršavanja, ukoliko bi podaci na heapu bili veliki.
+ 
+
+Ako oba pokazivača pokazuju na istu lokaciju u memoriji, nastaje problem zato što kad promenljive izadju iz scopea, obe će pokušati da oslobode istu memoriju. Ovo se naziva i double free error i jedan je od bugova memory safetija. Oslobadjanje memorije dvaput može dovesti do korupcije u memoriji i potencijalnih bezbednosnih ranjivosti. Da bi se osigurala bezbednost memorije, posle linije 
+let s2=s1, Rust smatra promenljivu s1 nevažećom. Tako da Rust više ništa ne mora da oslobadja kada s1 izadje iz scopea. 
+
+  let s1 = String::from("hello");
+    let s2 = s1;
+
+    println!("{}, world!", s1); 
+
+
+
+
+
+
+
+
+Ovaj kod će dovesti do sledećeg erora:
+$ cargo run
+   Compiling ownership v0.1.0 (file:///projects/ownership)
+error[E0382]: borrow of moved value: `s1`
+ --> src/main.rs:5:28
+  |
+2 |     let s1 = String::from("hello");
+  |         -- move occurs because `s1` has type `String`, which does not implement the `Copy` trait
+3 |     let s2 = s1;
+  |              -- value moved here
+4 |
+5 |     println!("{}, world!", s1);
+  |                            ^^ value borrowed here after move
+  |
+  = note: this error originates in the macro `$crate::format_args_nl` which comes from the expansion of the macro `println` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider cloning the value if the performance cost is acceptable
+  |
+3 |     let s2 = s1.clone();
+  |                ++++++++
+
+
+Zato što Rust invalidira prvu promenljivu, ne radi se o shallow copy-u nego o move-u, tako da možemo reći da je promenljiva s1 pomerena u s2.
+ 
+
+Ovo rešava nas problem oslobadjanja memorije pošto samo s2 ostaje validna i promenljiva, i kad ona izadje iz scopea, oslobodiće memoriju. Rustov izbor dizajna koji se podrazumeva: Rust nikada neće kreirati duboke kopije naših promenljivih, stoga za svako automatsko kopiranje se može pretpostaviti da je jeftino u smislu performansi tokom izvršenja.
+
+PROMENLJIVE I PODACI U INTERAKCIJI SA KLONOM
+Ako želimo da napravimo duboku kopiju String podataka sa heapa, a ne samo podatke sa stacka, možemo koristiti clone metodu. 
+
+    let s1 = String::from("hello");
+    let s2 = s1.clone();
+
+    println!("s1 = {}, s2 = {}", s1, s2);
+
+U ovom primeru se kopiraju podaci sa heapa. Kada vidimo poziv za kloniranje znamo da se izvršava neki proizvoljni kod i da taj kod može biti skup. To je vizuelni pokazatelj da se dešava nešto drugačije.
+
+
+
+
+STACK-ONLY PODACI: COPY
+
+    let x = 5;
+    let y = x;
+
+    println!("x = {}, y = {}", x, y);	
+
+U ovom primeru, kod je validan i  promenljiva neće biti pomerana u y zato što se integeri koji imaju fiksnu veličinu u runtimeu čuvaju na stacku i njihove kopije se brzo prave. Tako da nema razloga da invalidiramo x posle kreiranja promenljive y. Ovde nema razlike izmedju duboke i plitke kopije, samim tim nema potrebe za clone metodom koja bi uradila obično plitko kopiranje, tako da je možemo izostaviti.
+Rust ima posenbu Copy anotaciju koja je osobina koju možemo da primenimo na tipove koji se čuvaju na stacku, kao što su integeri. Ako tip implementira copy osobinu, promenljive koje ih koriste se ne move-uju nego se pravi trivijalna kopija. što ih čini i dalje validnim nakon dodeljivanja drugoj promenljivoj. 
+Rust nam neće dozvoliti da označimo tip sa copy anotacijom ako bilo koji njegov deo implementira drop osobinu. Ako tipu treba nešto posebno da se desi kada promenljiva izadje iz scopea a mi dodelimo Copy osobinu tom tipu, dobićemo compile time eror.
+Copy osobinu implementira grupa skalarnih tipova:
+•	Svi integer tipovi.
+•	Svi boolean tipovi.
+•	Svi floating point tipovi.
+•	Karakter tip
+•	Tuplovi koji implementiraju copy osobinu
+
+
+
+
+
+
+
+
+OWNERSHIP I FUNKCIJE
+Mehanika prosledjivanje vrednosti funkciji je slična dodeli vrednosti promenljivoj. Prosledjivanje promenljive funkciji će pomeriti ili kopirati baš kao što to čini dodeljivanje.
+
+fn main() {
+    let s = String::from("hello");  // s comes into scope
+
+    takes_ownership(s);             // s's value moves into the function...
+                                    // ... and so is no longer valid here
+
+    let x = 5;                      // x comes into scope
+
+    makes_copy(x);                  // x would move into the function,
+                                    // but i32 is Copy, so it's okay to still
+                                    // use x afterward
+
+} // Here, x goes out of scope, then s. But because s's value was moved, nothing
+  // special happens.
+
+fn takes_ownership(some_string: String) { // some_string comes into scope
+    println!("{}", some_string);
+} // Here, some_string goes out of scope and `drop` is called. The backing
+  // memory is freed.
+
+fn makes_copy(some_integer: i32) { // some_integer comes into scope
+    println!("{}", some_integer);
+} // Here, some_integer goes out of scope. Nothing special happens.
+
+Ako bismo koristili promenljivu s posle poziva finkcije takes_ownership, dobili bismo compile time eror. Ove statične provere nas štite od grešaka. 
+POVRATNE VREDNOSTI I SCOPE
+Povratne vrednosti takodje mogu preneti vlasništvo.
+fn main() {
+    let s1 = gives_ownership();         // gives_ownership moves its return
+                                        // value into s1
+
+    let s2 = String::from("hello");     // s2 comes into scope
+
+    let s3 = takes_and_gives_back(s2);  // s2 is moved into
+                                        // takes_and_gives_back, which also
+                                        // moves its return value into s3
+} // Here, s3 goes out of scope and is dropped. s2 was moved, so nothing
+  // happens. s1 goes out of scope and is dropped.
+
+fn gives_ownership() -> String {             // gives_ownership will move its
+                                             // return value into the function
+                                             // that calls it
+
+    let some_string = String::from("yours"); // some_string comes into scope
+
+    some_string                              // some_string is returned and
+                                             // moves out to the calling
+                                             // function
+}
+
+// This function takes a String and returns one
+fn takes_and_gives_back(a_string: String) -> String { // a_string comes into
+                                                      // scope
+
+    a_string  // a_string is returned and moves out to the calling function
+}
+Vlasništvo nad promenljivom prati isti obrazac: dodeljivanje vrednosti drugoj promenljivoj je pomera. Kad promenljiva koja uključuje podatke na heaup izadje iz scopea, vrednost će biti očišćena automatskim pozivom drop funkcije, osim ako vlasništvo nad podacima nije premešteno u drugu promenljivu.
+Rust nam omogućava da vratimo više vrednosti koristeći tuple.
+fn main() {
+    let s1 = String::from("hello");
+
+    let (s2, len) = calculate_length(s1);
+
+    println!("The length of '{}' is {}.", s2, len);
+}
+
+fn calculate_length(s: String) -> (String, usize) {
+    let length = s.len(); // len() returns the length of a String
+
+    (s, length)
+}	
+
+Rust ima funkciju za korišćenje vrednosti bez prenosa vlasništva, koja se zove referenca.
+
+
+
+
+
+
+
+
+4.2 REFERENCE I POZAJMLJIVANJA
+Referenca je kao pointer ka nekoj adresi na kojoj možemo da pristupimo vrednosti na toj adresi koju poseduje neka druga promenljiva. Za razliku od pointera, referenca garantuje da ukazuje na vazeću vrednost odredjenog tipa tokom trajanja te reference.
+Ovo je primer kako možemo da koristimo referencu u calculate length funkciji, umesto da preuzmemo vrednost promenljive u parametru:
+
+fn main() {
+    let s1 = String::from("hello");
+
+    let len = calculate_length(&s1);
+
+    println!("The length of '{}' is {}.", s1, len);
+}
+
+fn calculate_length(s: &String) -> usize {
+    s.len()
+}
+
+Reference nam dozvoljavaju da se referišemo na neku vrednost bez da preuzimamo ownership nad njom. 
+  
+
+Isto tako mozemo da deklarišemo funkciju čiji parametar ima referencu na tip, a prilikom poziva te funkcije moramo da prosledimo argument koji je referenca na samu vrednost.
+let s1 = String::from("hello");
+
+    let len = calculate_length(&s1);
+fn calculate_length(s: &String) -> usize { // s is a reference to a String
+    s.len()
+} // Here, s goes out of scope. But because it does not have ownership of what
+  // it refers to, it is not dropped.The length of 'hello' is 5.
+
+Nakon izvršenja ove funkcije ne poziva se Drop funkcija zato što referenca ne poseduje vrednost promenljive.
+
+Reference su kao I promenljive imutabilne po default, tako da ne možemo da ih prosledjujemo funkcijama koje menjaju neki state.
+fn main() {
+    let s = String::from("hello");
+
+    change(&s);
+}
+
+fn change(some_string: &String) {
+    some_string.push_str(", world");
+}
+// baciće error zato sto je promenljiva kao I referenca imutabilna…
+
+
+
+
+
+MUTABILNE REFERENCE
+Prethodnu funkciju možemo da ispravimo tako što ćemo proslediti mutabilnu reference na tip kao parameter prilikom deklaracije, I mutablinu reference na samu vrednost kao argument prilikom poziva te funkcije:
+
+fn main() {
+    let mut s = String::from("hello");
+
+    change(&mut s);
+}
+
+fn change(some_string: &mut String) {
+    some_string.push_str(", world");
+}
+
+Mutabilne reference imaju jednu veliku restrikciju a to je da možemo imati samo jednu mutablinu reference na samu vrednost.
+let mut s = String::from("hello");
+
+    let r1 = &mut s;
+    let r2 = &mut s;
+
+    println!("{}, {}", r1, r2);
+// baciće error zato što imamo 2 reference na istu vrednost.
+
+Prednost ovog ograničenja je da Rust na ovaj način može da spreči trku vrednosti u kompajl tajmu.
+
+Trke podataka se dogadjaju kada:
+Dva ili više pokazivača istovremeno pokazuju na istu vrednost.
+Bar jedan od pokazivača se koristi za pisanje u samu vrednost.
+Ne postoje mehanizmi za sinhronizaciju pristupa vrednostima.
+Trke podataka daju undefined ponašanje i veoma ih je teko dijagnostifikovati u run tajmu, tako da Rust odbija da kompajlira ovakovo ponašanje.
+Visestruke mutabilne reference su moguce jedino ako nisu u istom scopeu.
+let mut s = String::from("hello");
+
+    {
+        let r1 = &mut s;
+    } // r1 goes out of scope here, so we can make a new reference with no problems.
+
+    let r2 = &mut s;
+
+// ovo je validno I kompajliraće se.
+
+Slično pravilo se odnosi I na kombinovanje promenljivih I nepromenljivih reference.
+
+let mut s = String::from("hello");
+
+    let r1 = &s; // no problem
+    let r2 = &s; // no problem
+    let r3 = &mut s; // BIG PROBLEM
+
+    println!("{}, {}, and {}", r1, r2, r3);
+//baca error.
+
+Za razliku od višestrukih mutabilnih referenci koje menjaju stanje promenljive, imutabilnoh reference možemo imati više u istom scopeu zato što one služe samo za čitanje vrednosti iz promenljive.
+
+
+
+
+Sledeći primer je moguć što mutabilne i imutabilne reference nisu u istom bloku:
+let mut s = String::from("hello");
+
+    let r1 = &s; // no problem
+    let r2 = &s; // no problem
+    println!("{} and {}", r1, r2);
+    // variables r1 and r2 will not be used after this point
+
+    let r3 = &mut s; // no problem
+    println!("{}", r3);	
+
+Rust ne dozvoljava Labave reference.
+
+Pravila reference:
+U jednom trenutku možemo imati samo jednu mutablinu ili neodredjeni broj imutabilnih reference.
+Reference uvek moraju biti validne.
+
+THE SLICE TYPE
+Slice tip nam omogućava da referenciramo na neprekidnu sekvencu elemenata u kolekciji, bez potrebe da referenciramo na celu kolekciju. Slice je na neki način referenca tako da ne preuzima ownership nad podacima.
+STRING SLICE
+String slice je referenca na deo stringa:
+  let s = String::from("hello world");
+ let hello = &s[0..5];
+ let world = &s[6..11];
+Poslednji bajt je pozicija indeksa – 1; &s[6..11]
+Rust koristi range sintaksu sa uglastim zagradama.
+Takodje ako počinjemo od prvog indeksa, možemo da izostavimo 0,     &s[..5];
+Isto tako možemo da izostavimo ako string obuhvata posledji bajt, tu poziciju možemo da izostavimo. &s[5..]
+
+
+Ako range obuhvata ceo string, možemo da zapišemo I ovako &s[..]
+Ukoliko npr. želimo da napišemo funkciju koja će deliti string po razmaku, ta funkcija bi izgledala ovako:
+
+
+
+
+
+
+Let s = from::String(‘’Hello World’’);
+
+fn first_word(s: &String) -> &str {
+    let bytes = s.as_bytes();
+for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[0..i]; //petlja vraca od prvog indeksa do razmaka.
+        }
+    }
+&s[..]  // funkcija vraca vrednost koji je referenca na prvi slajs.
+}
+U petlji nalazimo kraj prve reči tako što nalazimo index bajta koji sadrži razmak, I u petlji vraćamo range od prvog indeksa do indeksa razmaka. Na taj način kada pozovemo funkciju first word, ona će vratiti prvu reč.
+Na isti način možemo da dobijemo i drugu reč.
+Na ovaj način se postiže validan API koji ne dozvoljava tamperovanje sa stringom jer će se kompajler pobrinuti da reference na string ostanu validne.
+fn main() {
+    let mut s = String::from("hello world");
+  let word = first_word(&s);
+s.clear(); // error!
+println!("the first word is: {}", word);
+}
+Eror se dogadja zato što imamo imutablinu refencu na string u promenljivoj – word,
+A kasnije u metodi s.clear() pokušavamo da izvršimo mutabilno pozajmljivanje, a ne možemo imati imutabilnu I mutabilnu reference na vrednost I jednom bloku u isto vreme. Takodje ako bi izvršili s.clear() metodu nad stringom, prethodni slajs više ne bi imao na šta da se referiše.
+
+STRING LITERALS AS SLICES
+String literali se čuvaju u binariju. 
+Let s = ‘‘Hello, World‘‘
+Tip string literal s ovde je &s – to je slice koji pokazuje na specifičnu poziciju u binariju, I zato su string literali imutabilni. &str je imutabilna referenca.
+
+STRING SLICES AS PARAMETERS
+Ako uzmemo prethodne primere funkcija koje vracaju slajsove, možemo I da modifikujemo njihov zapis:
+
+fn first_word(s: &String) -> &str 
+
+takodje mozemo da zapisemo i na sledeci nacin:
+
+fn first_word(s: &str) -> &str 
+
+String slice možemo da prosledimo direktno a ako imamo String, možemo da prosledimo slice stringa ili referencu na string.
+
+
+OTHER SLICES
+Slajsovi rade I na tipovima koji nisu stringovi, npr niz intova32:
+let a = [1, 2, 3, 4, 5];
+let slice = &a[1..3];
+assert_eq!(slice, &[2, 3]);
+
+SUMMARY
+Koncepti ownership, Borrowinga I Slajsova omogućavaju memoru safety u Rustu u compile tajmu.
