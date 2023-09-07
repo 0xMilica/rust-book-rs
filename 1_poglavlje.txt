@@ -23,8 +23,8 @@ Main funkcija se uvek prva izvršava u Rust programu. Telo funkcije se nalazi u 
 
 Kompajliranje i pokretanje(running) su odvojeni koraci 
 
-Prvo moramo da kompajliramo kod i za to koristimo komandu rustc i prosledjdujemo fajl koji hoćemo da se kompajlira, na primer: rustc main.rs. Ako je kompajliranje uspešno, pojaviće se 3 fajla: main.exe (executable file) main.pdb (debugging extenzija), main.rs (source file). Kompajlirani fajl pokrećemo pomoću komande .\main.exe koja će izvršiti program. 
-Rust je a head of time compiled jezik, što znači da ako kompajliramo program, možemo nekom drugom da damo executable I on može da runuje bez da instalira Rust, što nije slučaj sa drugim jezicima npr pythonom. Kompjliranje samo sa rustc komandom je ok za manje programe ali za veće nam treba Cargo tooling. 
+Prvo moramo da kompajliramo kod i za to koristimo komandu rustc i prosledjdujemo fajl koji hoćemo da se kompajlira, na primer: rustc main.rs. Ako je kompajliranje uspešno, pojaviće se 3 fajla: main.exe (executable file), main.pdb (debugging extenzija) i main.rs (source file). Kompajlirani fajl pokrećemo pomoću komande .\main.exe koja će izvršiti program. 
+Rust je 'ahead-of-time compiled' jezik, što znači da možemo da kompajliramo program možemo da damo nekom drugom, i taj neko može da pokrene program bez da instalira Rust, što nije slučaj sa drugim jezicima, kao što je Python. Kompjliranje samo sa rustc komandom je u redu za manje programe, ali kako projekat raste, poželjno je imati više opcija, za šta nam treba Cargo tooling. 
 
 1.3 Hello Cargo 
 
