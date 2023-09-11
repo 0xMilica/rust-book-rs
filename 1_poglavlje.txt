@@ -41,10 +41,10 @@ version = "0.1.0"
 edition = "2021" 
 
 TOML (Tom’s Obvious, Minimal Language) - konfiguracioni format Cargo-a. 
-Prva linija [package] je section heading I navodi statement koji definišu paket. 
-Linija [dependencies] definise spoljašnje dependencije. 
-U Rustu, paketi koda nazivamo Crates. 
-Cargo očekuje da nasi source fajlovi budu uskladišteni u src folderu. Top level folder namenjen je readme fajlu, licence informacije, konfiguracioni fajlovi itd… 
+Prva linija [package] je section heading i navodi statement-e koji definišu paket. 
+Linija [dependencies] definise spoljašnje zavisnosti. 
+Pakete kôda u Rust-u nazivamo Crates. 
+Cargo očekuje da naši source fajlovi budu uskladišteni u src folderu. Top level folder namenjen je za read.me fajl, informacije o licenci (ukoliko postoji), konfiguracione fajlove, itd. 
 
 
 BUILDING AND RUNNING CARGO PROJECT 
@@ -55,7 +55,7 @@ cargo build
 Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo) 
 Finished dev [unoptimized + debuginfo] target(s) in 2.85 secs 
 
-Ova komanda kreira executable file u target\debug\hello_cargo.exe, u našem a ne u trenutnom folderu. Zato sto debug build defaultni build, cargo stavlja binary u debug folder. Executable možemo da pokrenemo sa ovom komandom: 
+Ova komanda kreira izvršni fajl u target\debug\hello_cargo.exe. Zato sto debug build defaultni build, cargo stavlja binary u debug folder. Executable možemo da pokrenemo sa ovom komandom: 
 .\target\debug\hello_cargo.exe 
 Kada pokrenemo Cargo build po prvi put on takodje kreira cargo.lock u top level folderu. On vodi računa o tačnim verzijama dependencija u našem projektu. Cargo automatski menadžuje ovaj content za nas. 
 Možemo da koristimo komandu Cargo Run koja će istovremeno kompajlirati i runuvati naš kod. 
