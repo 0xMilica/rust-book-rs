@@ -28,8 +28,8 @@ Rust je 'ahead-of-time compiled' jezik, što znači da možemo da kompajliramo p
 
 1.3 Hello Cargo 
 
-Cargo je build sistem i package manager. On hendluje bildovanje projekata, download biblioteka (dependency-ja) i gradjenje sopstvenih biblioteka. Cargo dolazi instaliran sa Rustom. Može se proveriti da li je instaliran pomoću pokretanja komande 'cargo –version'. 
-Kreiranje projekta sa Cargom $ cargo new hello_cargo, cd hello_cargo. Cargo je definisao 2 fajla I jedan folder za nas. Cargo.toml fajl I src folder sa main.rs fajlom. Takodje je inicijalizovao git repozitori sa .gitignore fajlom. Git fajlovi nece biti generisani sa komandom cargo new u postojecem git repozitorijumu. Možemo da overrajdujejmo ovo ponašanje sa komandom cargo new --vcs=git. Sa –vcs flagom biramo da ne koristimo version control. 
+Cargo je build sistem i package manager. On rukovodi bildovanjem projekata, download-ovanjem biblioteka (dependency-ja) i gradjenje sopstvenih biblioteka. Cargo dolazi instaliran sa Rust-om. Može se proveriti da li je instaliran pomoću pokretanja komande 'cargo –version'. 
+Kreiranje projekta sa Cargom: $ cargo new hello_cargo, cd hello_cargo. Cargo je definisao 2 fajla i jedan folder: cargo.toml fajl i src folder koji sadrži main.rs fajl. Takodje je inicijalizovao git repozitorije sa .gitignore fajlom. Git fajlovi neće biti generisani sa komandom cargo new u postojećem git repozitorijumu. Možemo da overrajdujejmo ovo ponašanje sa komandom cargo new --vcs=git. Pomoću –vcs biramo da ne koristimo version control. 
 
 
 
@@ -40,7 +40,7 @@ name = "hello_cargo"
 version = "0.1.0" 
 edition = "2021" 
 
-TOML (Tom’s Obvious, Minimal Language) format, koji je kofigurise Cargo. 
+TOML (Tom’s Obvious, Minimal Language) - konfiguracioni format Cargo-a. 
 Prva linija [package] je section heading I navodi statement koji definišu paket. 
 Linija [dependencies] definise spoljašnje dependencije. 
 U Rustu, paketi koda nazivamo Crates. 
