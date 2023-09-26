@@ -55,18 +55,18 @@ cargo build
 Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo) 
 Finished dev [unoptimized + debuginfo] target(s) in 2.85 secs 
 
-Ova komanda kreira izvršni fajl u target\debug\hello_cargo.exe. Zato sto debug build defaultni build, cargo stavlja binary u debug folder. Executable možemo da pokrenemo sa ovom komandom: 
+Ova komanda kreira izvršni fajl u target\debug\hello_cargo.exe. Cargo smešta binary u debug folder. Executable možemo da pokrenemo pomoću sledeće komande: 
 .\target\debug\hello_cargo.exe 
-Kada pokrenemo Cargo build po prvi put on takodje kreira cargo.lock u top level folderu. On vodi računa o tačnim verzijama dependencija u našem projektu. Cargo automatski menadžuje ovaj content za nas. 
-Možemo da koristimo komandu Cargo Run koja će istovremeno kompajlirati i runuvati naš kod. 
+Kada pokrenemo Cargo build prvi put on kreira cargo.lock u top level folderu. On vodi računa o tačnim verzijama dependency-ja u našem projektu. Cargo automatski rukovodi ovim za nas. 
+Možemo da koristimo komandu Cargo Run koja će istovremeno kompajlirati i pokrenuti naš kôd. 
 
 cargo run 
 Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs 
 Running `target/debug/hello_cargo` 
 Hello, world! 
 
-Cargo run je mnogo uobičajeniji način za ranovanje našeg koda. 
-Ukoliko promenimo source kod cargo će rebildovati kod I dobićemo drugačiju poruku: 
+Cargo run je dosta uobičajeniji način za pokretanje našeg kôda. 
+Ukoliko promenimo izvorni kôd, cargo će rebildovati kôd i dobićemo drugačiju poruku: 
 
 cargo run 
 Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo) 
@@ -75,7 +75,7 @@ Running `target/debug/hello_cargo`
 Hello, world! 
 
 
-Cargo check je komanda koja brzo proverava da li se nas kod kompajlira ali ne proizvodi executable. 
+Cargo check je komanda koja brzo proverava da li se naš kôd kompajlira (a ne proizvodi executable). 
 
 cargo check 
 Checking hello_cargo v0.1.0 (file:///projects/hello_cargo) 
