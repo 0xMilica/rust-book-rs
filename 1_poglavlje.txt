@@ -55,7 +55,7 @@ cargo build
 Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo) 
 Finished dev [unoptimized + debuginfo] target(s) in 2.85 secs 
 
-Ova komanda kreira izvršni fajl u target\debug\hello_cargo.exe. Cargo smešta binary u debug folder. Executable možemo da pokrenemo pomoću sledeće komande: 
+Ova komanda kreira izvršni fajl u target\debug\hello_cargo.exe. Cargo smešta binary u debug folder. Izvršni kôd možemo da pokrenemo pomoću sledeće komande: 
 .\target\debug\hello_cargo.exe 
 Kada pokrenemo Cargo build prvi put on kreira cargo.lock u top level folderu. On vodi računa o tačnim verzijama dependency-ja u našem projektu. Cargo automatski rukovodi ovim za nas. 
 Možemo da koristimo komandu Cargo Run koja će istovremeno kompajlirati i pokrenuti naš kôd. 
@@ -75,33 +75,33 @@ Running `target/debug/hello_cargo`
 Hello, world! 
 
 
-Cargo check je komanda koja brzo proverava da li se naš kôd kompajlira (a ne proizvodi executable). 
+Cargo check je komanda koja brzo proverava da li se naš kôd kompajlira (a ne proizvodi izvršni kôd). 
 
 cargo check 
 Checking hello_cargo v0.1.0 (file:///projects/hello_cargo) 
 Finished dev [unoptimized + debuginfo] target(s) in 0.32 sec 
 
-Check je zgodan zato što je mnogo brži od builda zato što ne proizvodi executable. Na ovaj način možemo da ubrzamo proces našeg rada zato što konstantno proveravamo da li se naš kod kompjlira. Na kraju kad smo spremni da napravimo executable runujemo build. 
+Check je zgodan zato što je mnogo brži od builda jer ne pravi izvršni kôd. Na ovaj način možemo da ubrzamo proces našeg rada zato što konstantno proveravamo da li se naš kôd kompjlira. Na kraju, kad smo spremni da napravimo izvršni kôd, pokrenemo build. 
 
 Upotreba Cargo-a: 
 
 • Kreiramo projekte sa cargo new 
 • Buildujemo projekte sa cargo build 
-• Buildujemo I runujemo projekte sa cargo run 
-• Proveravamo da li se kod kompajlira sa cargo check bez da proizvodimo executable. 
+• Buildujemo i pokrećemo projekte sa cargo run 
+• Proveravamo da li se kôd kompajlira sa cargo check, a ne proizvodimo izvršni kôd
 • Cargo čuva rezultate u target/build folderu 
 
 
 
 BUILDING FOR RELEASE 
 
-Kada je program spreman za release koristimo komandu build –release da ga kompajliramo sa optimizacijom. Ova komanda će stvoriti exectuble u target/release folderu umesto target/debug folderu. Optimizacija čini naš program bržim ali je I vreme kompajliranja duže. Zato postoje 2 različita profila: jedan za development kada rebildujemo brzo I često I jedan za build finalnog programa koji ćemo predati useru I koji se neće rebildovati ali ce biti veoma brz. 
+Kada je program spreman za release, koristimo komandu build –release da ga kompajliramo uz optimizaciju. Ova komanda će stvoriti izvršni kôd u target/release folderu umesto target/debug folderu. Optimizacija čini naš program bržim, ali se naše vreme kompajliranja produžava. Zato postoje 2 različita profila: jedan za razvoj kada rebildujemo brzo i često, a drugi za build konačnog programa koji ćemo predati korisniku i koji se neće rebildovati, ali će biti veoma brz. 
 
 
 CARGO KONVENCIJE 
 
-Za jednostavne programe dovoljno je da koristimo rustc ali čim program počne da raste treba da koristimo cargo. Iako Hello Cargo program deluje jednostavno, on obuhvata sav potreban tooling koji nam treba. 
-Ako radimo na nekom postojećem projektu, možemo da proverimo kod koristeci Git, kloniramo taj projekat prebacimo se u njegov folder I bildujemo: 
+Za jednostavne programe dovoljno je da koristimo rustc, ali čim program počne da raste treba da koristimo cargo. Iako Hello Cargo program deluje jednostavno, on obuhvata sav potreban tooling koji nam treba. 
+Ako radimo na nekom postojećem projektu, možemo da proverimo kôd koristeci Git, kloniramo taj projekat, prebacimo se u njegov folder i bildujemo: 
 
 git clone example.org/someproject 
 cd someproject 
@@ -113,4 +113,4 @@ Za više informacija pogledati dokumentaciju.
 SUMMARY 
 
 Rustup koristimo da instaliramo poslednju stablinu verziju Rusta.
-Updajtejemo noviju verziju.
+Time prelazimo na noviju verziju.
